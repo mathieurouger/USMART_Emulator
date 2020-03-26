@@ -15,4 +15,4 @@ A UnetStack webshell shall open on your default browser (to see how it works : h
 
 ### Run the script
 
-You must run the Simulation script before your Python script ! Select sim1.groovy then press the run button.
+**You must run the Simulation script before your Python script !** Select sim1.groovy then press the run button.
