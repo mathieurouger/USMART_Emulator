@@ -18,9 +18,10 @@ class PythonAgent extends UnetAgent {
     def phy;
     def myLocation;
     def myAddress;
-    def data;
     def IDreq = 0;
-    def time_ping;
+    def time_ping = null;
+    def function_state = null;
+    def data_to_py = null;
 
     void startup() {
         println(agentID.name + ' running')
@@ -36,34 +37,38 @@ class PythonAgent extends UnetAgent {
         println("In PythonAgent::MessageBehavior req ="+req)
         if (req.performative) println("req.performative is " + req.performative)
         else println("req.performative is null")
+
+        def ack = new GenericMessage(req, Performative.INFORM)
       
-      if ((req.performative == Performative.REQUEST) && (req.IDreq > IDreq)) {
-        IDreq = req.IDreq
-        println('IDreq = ' + IDreq)
-        //log.info "Generic message request of type ${req.type}"
-        switch (req.type) {
-            case 'loc':
-              //println("Handling localisation request");
-              sendUPSBeacon(); break;
-            case 'ping':
-              println("Handling ping request");
-              ping(req.to_addr); break;
-            case 'exe':
-              //println("Handling exe request"); 
-              exe(); break;
-            case 'sense':
-              //println("Handling sense request"); 
-              sense(); break;
-            default: println "Unknown request";
+        if ((req.performative == Performative.REQUEST) && (req.IDreq > IDreq)) {
+            IDreq = req.IDreq
+            println('IDreq = ' + IDreq)
+            //log.info "Generic message request of type ${req.type}"
+            switch (req.type) {
+                case 'loc':
+                  //println("Handling localisation request");
+                  sendUPSBeacon(); break;
+                case 'ping':
+                  println("Handling ping request");
+                  ack.data = '$P' + corrected_address(req.to_addr);
+                  send ack;
+                  ping(req.to_addr); break;
+                case 'exe':
+                  //println("Handling exe request"); 
+                  exe(); break;
+                case 'sense':
+                  //println("Handling sense request"); 
+                  sense(); break;
+                default: println "Unknown request";
+            }
+            //println "In USMARTBaseAnchorDaemon::MessageBehavior, just after exe"
+            def rsp = new GenericMessage(req, Performative.INFORM)
+            rsp.state = function_state
+            rsp.time_ping = time_ping
+            rsp.data = data_to_py
+            println "In PythonAgent::MessageBehavior, rsp is " + rsp     
+            send rsp
         }
-        //println "In USMARTBaseAnchorDaemon::MessageBehavior, just after exe"
-        def rsp = new GenericMessage(req, Performative.INFORM)
-        rsp.ok = 1
-        rsp.time_ping = time_ping
-        println('time ping = ' + time_ping)
-        println "In USMARTBaseAnchorDaemon::MessageBehavior, rsp is " + rsp     
-        send rsp
-      }
     })
 
     }
@@ -74,7 +79,6 @@ class PythonAgent extends UnetAgent {
 
         DatagramReq req = new DatagramReq(to: to_addr, protocol: PING_PROTOCOL)
         phy << req
-        println('after phy << req')
         def txNtf = receive(TxFrameNtf, 10000) // TO-DO:check protocol
         def rxNtf = receive({ it instanceof RxFrameNtf && it.from == req.to}, 10000)
         if (txNtf && rxNtf && rxNtf.from == req.to) {
@@ -83,26 +87,16 @@ class PythonAgent extends UnetAgent {
             println("rxTime=${rxNtf.rxTime}")
             println("txTime=${txNtf.txTime}")
             println("Response from ${rxNtf.from}: time = ${time_ping}ms")
+            function_state = 'Ping processed'
+            data_to_py = "#R" + corrected_address(to_addr) + 'T' + rxNtf.data
         }
         else {
-            println 'Request timeout'
+            function_state = 'Ping Request timeout'
+            println (function_state)
+            
         }
         
     }
-
-    // @Override
-    // Message processRequest(Message msg) {
-    //     println('PythonAgent processRequest run')
-    //     if (msg instanceof DatagramReq) {
-    //         println('Got a DatagramNtf with protocol ' + msg.protocol)
-    //         // do whatever you want with the request
-    //         // data = bytes(ntf.data)
-    //         println(msg.data)
-    //         // send new DatagramReq (to: 2)
-    //         return new Message(msg, Performative.AGREE)
-    //     }
-    //     return null
-    // }
     
     @Override
     void processMessage(Message msg) {
@@ -110,7 +104,16 @@ class PythonAgent extends UnetAgent {
         // pong
         if (msg instanceof DatagramNtf && msg.protocol == PING_PROTOCOL) {
             println("pong : Node "+ myAddress + ' from ' + msg.from +" protocol is "+ msg.protocol)
-            send new DatagramReq(recipient: msg.sender, to: msg.from, protocol: PING_PROTOCOL)
+            send new DatagramReq(recipient: msg.sender, to: msg.from, data: phy.energy as byte[], protocol: PING_PROTOCOL)
+            println ('processMessage energy : ' + phy.energy)
         }
     }
+    
+    String corrected_address(address) {
+        address = address.toString()
+        if (address.size() == 1) address = '00' + address
+        if (address.size() == 2) address = '0' + address
+        return address
+    }
 }
+
