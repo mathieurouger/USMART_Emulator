@@ -39,26 +39,30 @@ class PythonAgent extends UnetAgent {
         else println("req.performative is null")
 
         def ack = new GenericMessage(req, Performative.INFORM)
+        println('IDreq = ' + req.IDreq)
       
-        if ((req.performative == Performative.REQUEST) && (req.IDreq > IDreq)) {
-            IDreq = req.IDreq
-            println('IDreq = ' + IDreq)
+        if ((req.performative == Performative.REQUEST) && (req.IDreq == 2)) {
+            // IDreq = req.IDreq
+            // println('IDreq = ' + IDreq)
             //log.info "Generic message request of type ${req.type}"
             switch (req.type) {
+                case 'set_address':
+                    println("Handling set_address")
+                    ack.data = '#A' + corrected_address(myAddress); break;
                 case 'loc':
-                  //println("Handling localisation request");
-                  sendUPSBeacon(); break;
+                    //println("Handling localisation request");
+                    sendUPSBeacon(); break;
                 case 'ping':
-                  println("Handling ping request");
-                  ack.data = '$P' + corrected_address(req.to_addr);
-                  send ack;
-                  ping(req.to_addr); break;
+                    println("Handling ping request");
+                    ack.data = '$P' + corrected_address(req.to_addr);
+                    send ack;
+                    ping(req.to_addr); break;
                 case 'exe':
-                  //println("Handling exe request"); 
-                  exe(); break;
+                    //println("Handling exe request"); 
+                    exe(); break;
                 case 'sense':
-                  //println("Handling sense request"); 
-                  sense(); break;
+                    //println("Handling sense request"); 
+                    sense(); break;
                 default: println "Unknown request";
             }
             //println "In USMARTBaseAnchorDaemon::MessageBehavior, just after exe"
