@@ -1,33 +1,43 @@
 import socket
+from unetpy import *
+from fjagepy import *
 
 class clientSocket:
 
-	def __init__(self, port):
+	def __init__(self, nodeID = '001'):
 
 		self.host = socket.gethostname()
-		self.port = port
-		self.client_socket
+		self.nodeID = int(nodeID)
+		self.port = int(nodeID) + 1100
+		self.sock = UnetSocket(self.host, self.port)
+		self.gw = self.sock.getGateway()
 
-	def connect(self, attempt = 0):
-			self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        	self.client_socket.connect((self.host, self.port))
-        	print('Connection to port', port, 'established')
+	def sendData(self, _type, to_addr, data):
+		IDreq = 1
 
-    def sendData(self, message):
-    	message = message + '\n'
-		self.client_socket.sendall(message.encode('utf-8'))
-    	return message
+		pyagent = 'pyagent' + str(self.nodeID)
+		gmsg = GenericMessage(perf = Performative.REQUEST, recipient = pyagent)
+		gmsg.IDreq = IDreq
+		gw.send(gmsg)
 
-    def receiveData(self):
-    	receivedData = None
-    	while receivedData.lower().strip() != 'bye':
-			receivedData = self.client_socket.recv(1024).decode('utf-8')
-			receivedData = receivedData.strip('\r\n')
-			print('Received from server :' + receivedData)
-			return receivedData
+		IDreq = IDreq + 1
 
-		print('Server wanted to disconnect')
-		self.client_socket.close()
+		gmsg2 = GenericMessage(perf = Performative.REQUEST, recipient = pyagent)
+		gmsg2.type = _type
+		gmsg2.data = data
+		gmsg2.from_addr = self.nodeID
+		gmsg2.to_addr = to_addr
+		gmsg2.IDreq = IDreq
+		gw.send(gmsg2)
+
+		IDreq = 0
+
+	def receiveData(self):
+		rgmsg = self.gw.receive(GenericMessage, 4000)
+		print ('rg msg :', rgmsg.state, 'rsp :', rgmsg.data)
+		print('Ping time is', rgmsg.time_ping, 'ms')
+
+		return rgmsg.data
 
 	def disconnect(self):
 		self.client_socket.close()
