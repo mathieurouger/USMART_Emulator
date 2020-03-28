@@ -12,6 +12,6 @@ ping_command = b'$P' + nodeID_ping.encode()
 serport.write(ping_command)
 
 ack_msg = serport.readline()
-println('ack_msg : ', ack_msg)
+print('ack_msg : ', ack_msg)
 rsp_msg = serport.readline()
-println('rsp_msg : ', rsp_msg)
+print('rsp_msg : ', rsp_msg)

@@ -1,6 +1,6 @@
 from unetpy import *
 import socket
-import clientSocket as pySocket
+import clientSocket
 
 
 # a Serial class emulator
@@ -22,14 +22,15 @@ class Serial:
         self.xonxoff  = xonxoff
         self.rtscts   = rtscts
 
-        self.last_instruction = ""
-        self.nodeID = ""
-        self.remote_nodeID = ""
+        self.last_instruction = ''
+        self.nodeID = ''
+        self.remote_nodeID = ''
         self.command = ''
         self._isOpen  = True
-        self._receivedData = ""
-        self._data = "It was the best of times.\nIt was the worst of times.\n"
+        self._receivedData = ''
+        self._data = 'It was the best of times.\nIt was the worst of times.\n'
         self.phy = ''
+        self.pySocket = ''
         
 
 
@@ -59,15 +60,15 @@ class Serial:
         if (self.command[0:2] == '$A' and len(self.command) == 5):
             _type = 'set_address'
             self.nodeID = string[2:]
-            pySocket.clientSocket(self.nodeID)  # initialize the clientSocket class
-            # pySocket.sendData(_type, data = None, to_addr = None)    # need to fix the rsp Generic Message on UnetStack (rs.time_ping must be deleted)
-            self.last_instruction = "SET_ADDRESS_INSTRUCTION"
+            self.pySocket = clientSocket.clientSocket(self.nodeID)  # initialize the clientSocket class
+            self.pySocket.sendData(_type)    # need to fix the rsp Generic Message on UnetStack
+            self.last_instruction = 'SET_ADDRESS_INSTRUCTION'
         # PING
         elif (self.command[0:2] == '$P' and len(self.command) == 5):
             _type = 'ping'
             to_addr = self.command[2:]
-            print(to_addr, type(to_addr))
-            pySocket.clientSocket.sendData(_type, to_addr, data = None)
+            # print(to_addr, type(to_addr))
+            self.pySocket.sendData(_type, to_addr)
             self.last_instruction = "PING_INSTRUCTION"
 
         else:
@@ -77,7 +78,7 @@ class Serial:
     ## readline()
     # reads characters from the fake Arduino until a \n is found.
     def readline( self ):
-        self._receivedData = pySocket.clientSocket.receiveData()
+        self._receivedData = self.pySocket.receiveData()
         return self._receivedData
 
     def reset_input_buffer( self ):

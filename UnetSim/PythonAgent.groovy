@@ -39,6 +39,7 @@ class PythonAgent extends UnetAgent {
         else println("req.performative is null")
 
         def ack = new GenericMessage(req, Performative.INFORM)
+        def rsp = new GenericMessage(req, Performative.INFORM)
         println('IDreq = ' + req.IDreq)
       
         if ((req.performative == Performative.REQUEST) && (req.IDreq == 2)) {
@@ -48,15 +49,19 @@ class PythonAgent extends UnetAgent {
             switch (req.type) {
                 case 'set_address':
                     println("Handling set_address")
-                    ack.data = '#A' + corrected_address(myAddress); break;
+                    ack.state = "Handling set_address"
+                    ack.data = '#A' + corrected_address(myAddress);
+                    send ack;
+                    rsp.data = ack.data; break;
                 case 'loc':
                     //println("Handling localisation request");
                     sendUPSBeacon(); break;
                 case 'ping':
                     println("Handling ping request");
-                    ack.data = '$P' + corrected_address(req.to_addr);
+                    ack.state = "Handling ping request"; ack.data = '$P' + corrected_address(req.to_addr);
                     send ack;
-                    ping(req.to_addr); break;
+                    ping(req.to_addr);
+                    rsp.time_ping = time_ping; break;
                 case 'exe':
                     //println("Handling exe request"); 
                     exe(); break;
@@ -66,9 +71,9 @@ class PythonAgent extends UnetAgent {
                 default: println "Unknown request";
             }
             //println "In USMARTBaseAnchorDaemon::MessageBehavior, just after exe"
-            def rsp = new GenericMessage(req, Performative.INFORM)
+            
             rsp.state = function_state
-            rsp.time_ping = time_ping
+            
             rsp.data = data_to_py
             println "In PythonAgent::MessageBehavior, rsp is " + rsp     
             send rsp
