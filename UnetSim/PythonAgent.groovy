@@ -46,6 +46,38 @@ class PythonAgent extends UnetAgent {
             // IDreq = req.IDreq
             // println('IDreq = ' + IDreq)
             //log.info "Generic message request of type ${req.type}"
+            function_state = 'None';
+            data_to_py = 'None';
+            
+            switch (req.type) {
+                case 'set_address':
+                    println("Handling set_address")
+                    ack.state = "Handling set_address"
+                    ack.data = '#A' + corrected_address(myAddress);
+                    send ack;
+                    rsp.data = ack.data; break;
+            }
+        }
+    })
+    
+        
+    
+    add new MessageBehavior(GenericMessage, { req ->
+        println("In PythonAgent::MessageBehavior req ="+req)
+        if (req.performative) println("req.performative is " + req.performative)
+        else println("req.performative is null")
+
+        def ack = new GenericMessage(req, Performative.INFORM)
+        def rsp = new GenericMessage(req, Performative.INFORM)
+        println('IDreq = ' + req.IDreq)
+      
+        if ((req.performative == Performative.REQUEST) && (req.IDreq == 2)) {
+            // IDreq = req.IDreq
+            // println('IDreq = ' + IDreq)
+            //log.info "Generic message request of type ${req.type}"
+            function_state = 'None';
+            data_to_py = 'None';
+            
             switch (req.type) {
                 case 'set_address':
                     println("Handling set_address")
