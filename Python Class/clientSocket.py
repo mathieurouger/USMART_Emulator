@@ -30,8 +30,6 @@ class clientSocket:
 		gmsg2.IDreq = IDreq
 		self.gw.send(gmsg2)
 
-		# self.sendITtwice(pyagent, IDreq, _type, to_addr, data)
-
 		IDreq = 0
 
 	def receiveData( self ):

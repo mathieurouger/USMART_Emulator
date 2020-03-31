@@ -60,8 +60,6 @@ class PythonAgent extends UnetAgent {
         }
     })
     
-        
-    
     add new MessageBehavior(GenericMessage, { req ->
         println("In PythonAgent::MessageBehavior req ="+req)
         if (req.performative) println("req.performative is " + req.performative)
@@ -113,7 +111,7 @@ class PythonAgent extends UnetAgent {
     })
 
     }
-
+    
     void ping(to_addr) {
 
         println "Pinging ${to_addr} at ${nanoTime()}"
@@ -141,7 +139,6 @@ class PythonAgent extends UnetAgent {
     
     @Override
     void processMessage(Message msg) {
-
         // pong
         if (msg instanceof DatagramNtf && msg.protocol == PING_PROTOCOL) {
             println("pong : Node "+ myAddress + ' from ' + msg.from +" protocol is "+ msg.protocol)

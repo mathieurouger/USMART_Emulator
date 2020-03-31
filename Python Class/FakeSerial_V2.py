@@ -2,7 +2,6 @@ from unetpy import *
 import socket
 import clientSocket
 
-
 # a Serial class emulator
 class Serial:
 
@@ -34,7 +33,7 @@ class Serial:
         
 
 
-    ## isOpen()
+    # isOpen()
     # returns True if the port to the Arduino is open.  False otherwise
     def isOpen( self ):
         return self._isOpen

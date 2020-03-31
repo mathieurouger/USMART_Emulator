@@ -2,11 +2,7 @@ import org.arl.fjage.RealTimePlatform
 
 import org.arl.fjage.*
 import org.arl.unet.*
-import org.arl.unet.phy.*
-import org.arl.unet.sim.*
 import org.arl.unet.sim.channels.*
-import static org.arl.unet.Services.*
-import static org.arl.unet.phy.Physical.*
 
 platform = RealTimePlatform           // use real-time mode
 
