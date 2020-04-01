@@ -22,14 +22,14 @@ On your terminal with the right path :
 
 ## Running the tests
 
-***I repeat that you'll need to run first the simulation on UnetStack first (`sim1.groovy`) as explained [here](UnetSim/README.md) then do what is explained here.***
+***You'll need to run first the simulation on UnetStack first (`sim1.groovy`) as explained [here](UnetSim/README.md) then do what is explained here.***
 
 # Ping test
 For now the only function that can be tested is Ping.
 
 Open a Terminal on the path of this folder then write ``` python ping_test.py```.
 **First time you run the code there should be an error**. The bug is known but not fixed, the message is not readed by UnetStack.
-**Write ```python ping_test.py``` a second time**. You should to that whenever you run the simulation on UnetStack. (She would not stop until you want to).
+**Write ```python ping_test.py``` a second time**. You should do that whenever you run the simulation on UnetStack. (She would not stop until you click on the red Stop button).
 
 The result must be :
 ```
