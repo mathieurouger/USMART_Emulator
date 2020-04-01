@@ -15,23 +15,23 @@ You'll need to install 3 modules to your pip to run the project : `numpy`, `fjag
 
 ### Installing
 
-On your terminal with the right path
+On your terminal with the right path :
 - ``` pip install numpy```
 - ``` pip install fjagepy```
 - ``` pip install unetpy```
 
 ## Running the tests
 
-I repeat that you'll need to run first the simulation on UnetStack first (`sim1.groovy`) as explained [here](UnetSim/README.md) then do what is explained here.
+***I repeat that you'll need to run first the simulation on UnetStack first (`sim1.groovy`) as explained [here](UnetSim/README.md) then do what is explained here.***
 
 # Ping test
 For now the only function that can be tested is Ping.
 
-Open a Terminal on the path of this folder then write ``` python ping_test.py```
+Open a Terminal on the path of this folder then write ``` python ping_test.py```.
 **First time you run the code there should be an error**. The bug is known but not fixed, the message is not readed by UnetStack.
-**Write ```python ping_test.py``` a second time**
+**Write ```python ping_test.py``` a second time**.
 
-The result must be
+The result must be :
 ```
 FakeSerial got: $A001
 UnetStack state : Handling set_address
