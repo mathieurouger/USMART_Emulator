@@ -123,31 +123,6 @@ class Serial:
     def reset_output_buffer( self ):
         return
 
-    def nodeID_to_API(self):
-        API = int(self.nodeID) + 1100
-        return API
-
-    def string_EOL(self, string):
-        string_EOL = string +'\n'
-        return string_EOL
-
-
-    def client_program(self):
-        host = socket.gethostname()
-        port = 5000
-
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((host, port))
-        message = self.command + '\n'    # EOL sign for Java
-
-        while message.lower().strip() != 'bye':
-            client_socket.send(message.encode())
-            self._receivedData = client_socket.recv(1024).decode('utf-8')
-
-            print('Received from server :' + self._receivedData)
-
-        client_socket.close()
-
     ## __str__()
     # returns a string representation of the serial class
     def __str__( self ):
@@ -156,5 +131,3 @@ class Serial:
                + " bytesize=%d, parity='%s', stopbits=%d, xonxoff=%d, rtscts=%d)"\
                % ( self.bytesize, self.parity, self.stopbits, self.xonxoff,
                    self.rtscts )
-    
-    def gw_function ( self ):
