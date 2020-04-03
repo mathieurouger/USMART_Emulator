@@ -33,7 +33,7 @@ class clientSocket:
 		IDreq = 0
 
 	def receiveData( self ):
-		rgmsg = self.gw.receive(GenericMessage, 4000)
+		rgmsg = self.gw.receive(GenericMessage, 10000)
 		print ('UnetStack state :', rgmsg.state)
 		# print ('rsp :', rgmsg.data)
 		# print('Ping time is', rgmsg.time_ping, 'ms')
