@@ -19,7 +19,7 @@ class PythonAgent extends UnetAgent {
     def myLocation;
     def myAddress;
     def IDreq = 0;
-    def time_ping = null;
+    def time_ping = 0;
     def function_state = null;
     def data_to_py = null;
 
@@ -118,8 +118,8 @@ class PythonAgent extends UnetAgent {
 
         DatagramReq req = new DatagramReq(to: to_addr, protocol: PING_PROTOCOL)
         phy << req
-        def txNtf = receive(TxFrameNtf, 10000) // TO-DO:check protocol
-        def rxNtf = receive({ it instanceof RxFrameNtf && it.from == req.to}, 10000)
+        def txNtf = receive(TxFrameNtf, 4000) // TO-DO:check protocol
+        def rxNtf = receive({ it instanceof RxFrameNtf && it.from == req.to}, 4000)
         if (txNtf && rxNtf && rxNtf.from == req.to) {
             time_ping = (rxNtf.rxTime-txNtf.txTime)/1000 //in ms
             println("Response from ${rxNtf.from}: ")
@@ -131,6 +131,7 @@ class PythonAgent extends UnetAgent {
         }
         else {
             function_state = 'Ping Request timeout'
+            data_to_py = '#TO'
             println (function_state)
             
         }
