@@ -8,5 +8,5 @@ All the codes developped on Python will be used and the information will be tran
 
 ## How to run the project ?
 
-You must run the sim1.groovy script first then the main.py script.
+You must run the sim1.groovy script first then the ping_test.py script in the PythonClass folder.
 To see how to run sim1.groovy go to the README.md file in UnetSim folder.
