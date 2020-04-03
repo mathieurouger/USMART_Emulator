@@ -6,7 +6,7 @@ import org.arl.unet.phy.TxFrameNtf
 class PythonAgent extends UnetAgent {
 
     final static int PING_PROTOCOL = 10;
-    final static int NODE_STATUS_PROTOCOL = 11;
+    final static int SUPPLY_VOLTAGE_PROTOCOL = 11;
     final static int BROADCAST_PROTOCOL = 12;
     final static int UNICAST_PROTOCOL = 13;
     final static int UNICAST_ACK_PROTOCOL = 14;
@@ -19,7 +19,7 @@ class PythonAgent extends UnetAgent {
     def myLocation;
     def myAddress;
     def IDreq = 0;
-    def time_ping = null;
+    def time_ping = 0;
     def function_state = null;
     def data_to_py = null;
 
@@ -87,14 +87,19 @@ class PythonAgent extends UnetAgent {
                     rsp.state = "Handling query_status request"
                     rsp.data = '#A' + corrected_address(myAddress) + 'V' + phy.energy.round(3);
                     send rsp; break;
+                case 'supply_voltage':
+                    println("Handling supply_voltage request");
+                    ack.state = "Handling supply_voltage request"; ack.data = '$V' + corrected_address(req.to_addr);
+                    send ack;
+                    supply_voltage(req.to_addr);
+                    rsp.time_ping = time_ping; rsp.state = function_state; rsp.data = data_to_py;
+                    send rsp; break;
                 case 'ping':
                     println("Handling ping request");
                     ack.state = "Handling ping request"; ack.data = '$P' + corrected_address(req.to_addr);
                     send ack;
                     ping(req.to_addr);
-                    rsp.time_ping = time_ping;
-                    rsp.state = function_state;
-                    rsp.data = data_to_py;
+                    rsp.time_ping = time_ping; rsp.state = function_state; rsp.data = data_to_py;
                     send rsp; break;
                 case 'exe':
                     //println("Handling exe request"); 
@@ -113,29 +118,47 @@ class PythonAgent extends UnetAgent {
     }
     
     void ping(to_addr) {
-
         println "Pinging ${to_addr} at ${nanoTime()}"
 
         DatagramReq req = new DatagramReq(to: to_addr, protocol: PING_PROTOCOL)
         phy << req
         def txNtf = receive(TxFrameNtf, 10000) // TO-DO:check protocol
-        def rxNtf = receive({ it instanceof RxFrameNtf && it.from == req.to}, 10000)
+        def rxNtf = receive({ it instanceof RxFrameNtf && it.from == req.to}, 4000)
         if (txNtf && rxNtf && rxNtf.from == req.to) {
             time_ping = (rxNtf.rxTime-txNtf.txTime)/1000 //in ms
-            println("Response from ${rxNtf.from}: ")
             println("rxTime=${rxNtf.rxTime}")
             println("txTime=${txNtf.txTime}")
             println("Response from ${rxNtf.from}: time = ${time_ping}ms")
             function_state = 'Ping processed'
-            data_to_py = "#R" + corrected_address(to_addr) + 'T' + rxNtf.data
-            }
+            data_to_py = '#R' + corrected_address(to_addr) + 'T' + rxNtf.data
+        }
         else {
             function_state = 'Ping Request timeout'
+            data_to_py = '#TO'
             println (function_state)
-            
         }
-        
+        println(data_to_py)
     }
+    
+    void supply_voltage(to_addr) {
+        println "Getting supply_voltage ${to_addr} at ${nanoTime()}"
+        DatagramReq req = new DatagramReq(to: to_addr, protocol: SUPPLY_VOLTAGE_PROTOCOL)
+        phy << req
+        def txNtf = receive(TxFrameNtf, 4000) // TO-DO:check protocol
+        def rxNtf = receive({ it instanceof RxFrameNtf && it.from == req.to}, 4000)
+        if (txNtf && rxNtf && rxNtf.from == req.to) {
+            time_ping = (rxNtf.rxTime-txNtf.txTime)/1000 //in ms
+            println("Response from ${rxNtf.from}: time = ${time_ping}ms, energy = ${rxNtf.data}")
+            function_state = 'Supply_voltage processed'
+            data_to_py = '#B' + corrected_address(to_addr) + '06V' + rxNtf.data
+        }
+        else {
+            function_state = 'Supply_voltage timeout'
+            data_to_py = '#TO'
+            println (function_state)
+        }
+    }
+    
     
     @Override
     void processMessage(Message msg) {
@@ -143,6 +166,12 @@ class PythonAgent extends UnetAgent {
         if (msg instanceof DatagramNtf && msg.protocol == PING_PROTOCOL) {
             println("pong : Node "+ myAddress + ' from ' + msg.from +" protocol is "+ msg.protocol)
             send new DatagramReq(recipient: msg.sender, to: msg.from, data: phy.energy.round(3) as byte[], protocol: PING_PROTOCOL)
+            println ('processMessage energy : ' + phy.energy)
+        }
+        // supply_voltage
+        if (msg instanceof DatagramNtf && msg.protocol == SUPPLY_VOLTAGE_PROTOCOL) {
+            println("pong : Node "+ myAddress + ' from ' + msg.from +" protocol is "+ msg.protocol)
+            send new DatagramReq(recipient: msg.sender, to: msg.from, data: phy.energy.round(3) as byte[], protocol: SUPPLY_VOLTAGE_PROTOCOL)
             println ('processMessage energy : ' + phy.energy)
         }
     }

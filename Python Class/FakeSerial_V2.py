@@ -67,6 +67,12 @@ class Serial:
             _type = 'query_status'
             self.pySocket.sendData(_type)
             self.last_instruction = 'QUERY_STATUS_INSTRUCTION'
+        # SUPPLY VOLTAGE
+        elif (self.command[0:2] == '$V' and len(self.command) == 5):
+            _type = 'supply_voltage'
+            to_addr = self.command[2:]
+            self.pySocket.sendData(_type, to_addr)
+            self.last_instruction = 'SUPPLY_VOLTAGE_INSTRUCTION'
         # PING
         elif (self.command[0:2] == '$P' and len(self.command) == 5):
             _type = 'ping'
