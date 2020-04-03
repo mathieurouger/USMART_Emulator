@@ -51,8 +51,8 @@ class PythonAgent extends UnetAgent {
             
             switch (req.type) {
                 case 'set_address':
-                    println("Handling set_address")
-                    ack.state = "Handling set_address"
+                    println("Handling set_address request")
+                    ack.state = "Handling set_address request"
                     ack.data = '#A' + corrected_address(myAddress);
                     send ack;
                     rsp.data = ack.data; break;
@@ -78,20 +78,24 @@ class PythonAgent extends UnetAgent {
             
             switch (req.type) {
                 case 'set_address':
-                    println("Handling set_address")
-                    ack.state = "Handling set_address"
+                    println("Handling set_address request")
+                    ack.state = "Handling set_address request"
                     ack.data = '#A' + corrected_address(myAddress);
-                    send ack;
-                    rsp.data = ack.data; break;
-                case 'loc':
-                    //println("Handling localisation request");
-                    sendUPSBeacon(); break;
+                    send ack; break;
+                case 'query_status':
+                    println("Handling query_status request");
+                    rsp.state = "Handling query_status request"
+                    rsp.data = '#A' + corrected_address(myAddress) + 'V' + phy.energy.round(3);
+                    send rsp; break;
                 case 'ping':
                     println("Handling ping request");
                     ack.state = "Handling ping request"; ack.data = '$P' + corrected_address(req.to_addr);
                     send ack;
                     ping(req.to_addr);
-                    rsp.time_ping = time_ping; break;
+                    rsp.time_ping = time_ping;
+                    rsp.state = function_state;
+                    rsp.data = data_to_py;
+                    send rsp; break;
                 case 'exe':
                     //println("Handling exe request"); 
                     exe(); break;
@@ -100,13 +104,9 @@ class PythonAgent extends UnetAgent {
                     sense(); break;
                 default: println "Unknown request";
             }
-            //println "In USMARTBaseAnchorDaemon::MessageBehavior, just after exe"
-            
-            rsp.state = function_state
-            
-            rsp.data = data_to_py
+
             println "In PythonAgent::MessageBehavior, rsp is " + rsp     
-            send rsp
+            
         }
     })
 
@@ -128,7 +128,7 @@ class PythonAgent extends UnetAgent {
             println("Response from ${rxNtf.from}: time = ${time_ping}ms")
             function_state = 'Ping processed'
             data_to_py = "#R" + corrected_address(to_addr) + 'T' + rxNtf.data
-        }
+            }
         else {
             function_state = 'Ping Request timeout'
             println (function_state)
@@ -142,7 +142,7 @@ class PythonAgent extends UnetAgent {
         // pong
         if (msg instanceof DatagramNtf && msg.protocol == PING_PROTOCOL) {
             println("pong : Node "+ myAddress + ' from ' + msg.from +" protocol is "+ msg.protocol)
-            send new DatagramReq(recipient: msg.sender, to: msg.from, data: phy.energy as byte[], protocol: PING_PROTOCOL)
+            send new DatagramReq(recipient: msg.sender, to: msg.from, data: phy.energy.round(3) as byte[], protocol: PING_PROTOCOL)
             println ('processMessage energy : ' + phy.energy)
         }
     }

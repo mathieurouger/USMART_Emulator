@@ -62,13 +62,18 @@ class Serial:
             self.pySocket = clientSocket.clientSocket(self.nodeID)  # initialize the clientSocket class
             self.pySocket.sendData(_type)    # need to fix the rsp Generic Message on UnetStack
             self.last_instruction = 'SET_ADDRESS_INSTRUCTION'
+        # QUERY STATUS
+        elif (self.command == '$?'):
+            _type = 'query_status'
+            self.pySocket.sendData(_type)
+            self.last_instruction = 'QUERY_STATUS_INSTRUCTION'
         # PING
         elif (self.command[0:2] == '$P' and len(self.command) == 5):
             _type = 'ping'
             to_addr = self.command[2:]
             # print(to_addr, type(to_addr))
             self.pySocket.sendData(_type, to_addr)
-            self.last_instruction = "PING_INSTRUCTION"
+            self.last_instruction = 'PING_INSTRUCTION'
 
         else:
             print("write FAILURE")
